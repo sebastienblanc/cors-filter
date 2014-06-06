@@ -173,6 +173,7 @@ public final class CORSFilter implements Filter {
             break;
         default:
             // Handles a CORS request that violates specification.
+            log("invalidating CORS because  specfs viloates " + requestType );
             this.handleInvalidCORS(request, response, filterChain);
             break;
         }
@@ -252,11 +253,13 @@ public final class CORSFilter implements Filter {
 
         // Section 6.1.2
         if (!isOriginAllowed(origin)) {
+            log("invalidating CORS because  origin " + origin + " is not allowed");
             handleInvalidCORS(request, response, filterChain);
             return;
         }
 
         if (!allowedHttpMethods.contains(method)) {
+            log("invalidating CORS because  method " + method + " is not allowed");
             handleInvalidCORS(request, response, filterChain);
             return;
         }
@@ -329,6 +332,7 @@ public final class CORSFilter implements Filter {
 
         // Section 6.2.2
         if (!isOriginAllowed(origin)) {
+            log("invalidating CORS because  origin " + origin + " is not allowed");
             handleInvalidCORS(request, response, filterChain);
             return;
         }
@@ -339,6 +343,7 @@ public final class CORSFilter implements Filter {
         if (accessControlRequestMethod == null
                 || (!HTTP_METHODS
                         .contains(accessControlRequestMethod.trim()))) {
+            log("invalidating CORS because  accessControlRequestMethod in HTTP_METHODS " + accessControlRequestMethod + " is not allowed");
             handleInvalidCORS(request, response, filterChain);
             return;
         } else {
@@ -360,6 +365,7 @@ public final class CORSFilter implements Filter {
 
         // Section 6.2.5
         if (!allowedHttpMethods.contains(accessControlRequestMethod)) {
+            log("invalidating CORS because  accessControlRequestMethod " + accessControlRequestMethod + " is not allowed");
             handleInvalidCORS(request, response, filterChain);
             return;
         }
@@ -368,6 +374,7 @@ public final class CORSFilter implements Filter {
         if (!accessControlRequestHeaders.isEmpty()) {
             for (String header : accessControlRequestHeaders) {
                 if (!allowedHttpHeaders.contains(header)) {
+                    log("invalidating CORS because header " + header + " is not allowed");
                     handleInvalidCORS(request, response, filterChain);
                     return;
                 }
@@ -815,7 +822,13 @@ public final class CORSFilter implements Filter {
         try {
             originURI = new URI(origin);
         } catch (URISyntaxException e) {
-            return false;
+            if(origin.startsWith("file")){
+                return true;
+            } else {
+                return false;
+            }
+
+
         }
         // If scheme for URI is null, return false. Return true otherwise.
         return originURI.getScheme() != null;
